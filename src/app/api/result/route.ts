@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { after } from "next/server";
 import { bad, fingerprint, ok, parse, rateLimit } from "@/lib/api";
 import { db } from "@/lib/supabase";
+import { appendRow } from "@/lib/sheets";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -70,10 +72,42 @@ export async function POST(req: Request) {
 
   if (error) console.error("[result] upsert failed", error.message);
 
-  await supabase
+  const { data: session } = await supabase
     .from("sessions")
     .update({ completed_at: new Date().toISOString(), duration_ms: durationMs })
-    .eq("id", sessionId);
+    .eq("id", sessionId)
+    .select("currency")
+    .single();
+
+  // Sheets export is a convenience mirror — never let it hold up the
+  // response, and never let its failure surface to the respondent.
+  after(async () => {
+    const { data: texts } = await supabase
+      .from("answers")
+      .select("question_id, value")
+      .eq("session_id", sessionId)
+      .in("question_id", ["wish", "said_no", "tool_gap"]);
+
+    const textFor = (id: string) => {
+      const row = texts?.find((t) => t.question_id === id);
+      const value = row?.value as { kind?: string; value?: string } | undefined;
+      return value?.kind === "text" ? (value.value ?? "") : "";
+    };
+
+    await appendRow([
+      new Date().toISOString(),
+      session?.currency ?? "",
+      r.archetype,
+      r.squeezeDay,
+      r.cycleDays,
+      r.hypothesis,
+      textFor("wish"),
+      textFor("said_no"),
+      textFor("tool_gap"),
+      "no",
+      sessionId,
+    ]);
+  });
 
   return ok();
 }

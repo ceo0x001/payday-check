@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { after } from "next/server";
 import { z } from "zod";
 import { bad, fingerprint, ok, parse, rateLimit } from "@/lib/api";
 import { db } from "@/lib/supabase";
+import { markJoinedWaitlist } from "@/lib/sheets";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,6 +50,10 @@ export async function POST(req: Request) {
   if (error) {
     console.error("[waitlist] upsert failed", error.message);
     return bad("Could not join the list", 500);
+  }
+
+  if (d.sessionId) {
+    after(() => markJoinedWaitlist(d.sessionId as string));
   }
 
   // `position` is a real sequence from the database — we never invent it.
