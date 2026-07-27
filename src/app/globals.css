@@ -1,0 +1,222 @@
+@import "tailwindcss";
+
+/*
+ * Payday Check design system.
+ *
+ * Apple-native, and light by default — Wallet, Apple Card, Health and Fitness
+ * are all light surfaces, and a warm near-black reads as "crypto app" rather
+ * than "the company that holds my money". The theme follows the phone's
+ * appearance setting, because adapting to the system is the most Apple
+ * behaviour there is.
+ *
+ * Two rules hold in both themes:
+ *   1. There is no red token. Red is judgement, and nothing here is entitled
+ *      to judge. The palette tops out at amber.
+ *   2. Gold has two roles. `gold` is text-safe (AA on the background at small
+ *      sizes); `gold-vivid` is for graphics and fills, which only need 3:1.
+ *      In dark they converge; in light they must not.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces — Apple's grouped-background progression. */
+  --bg: #ffffff;
+  --surface: #f5f5f7;
+  --surface-2: #ebebf0;
+
+  /* Separators — Apple ships these as translucent so they sit on any surface. */
+  --separator: rgba(60, 60, 67, 0.13);
+  --separator-strong: rgba(60, 60, 67, 0.26);
+
+  /* Labels. */
+  --text: #1c1c1e;
+  --muted: #5c5c63;
+  --faint: #8a8a90;
+
+  /* Accent. Warmth without the fintech cliché. */
+  --gold: #8c6111; /* text-safe: 5.6:1 on white */
+  --gold-vivid: #be8626; /* graphics + fills: 3.5:1 on white */
+  --gold-soft: rgba(190, 134, 38, 0.1);
+  --on-gold: #1c1c1e; /* 5.4:1 on gold-vivid */
+
+  /* Positive only. */
+  --mint: #1a7f57;
+  --mint-vivid: #1a7f57;
+  --mint-soft: rgba(26, 127, 87, 0.08);
+
+  /* The caution ceiling. Never red. */
+  --amber: #a8560a;
+
+  /* Hero and result glow. Barely-there in light; overdone reads as a gradient. */
+  --bloom-1: rgba(190, 134, 38, 0.09);
+  --bloom-2: rgba(26, 127, 87, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --surface-2: #2c2c2e;
+
+    --separator: rgba(84, 84, 88, 0.4);
+    --separator-strong: rgba(120, 120, 128, 0.5);
+
+    --text: #ffffff;
+    --muted: #a1a1a8;
+    --faint: #737379;
+
+    --gold: #e8b15c;
+    --gold-vivid: #e8b15c;
+    --gold-soft: rgba(232, 177, 92, 0.16);
+    --on-gold: #1c1c1e;
+
+    --mint: #63d9a3;
+    --mint-vivid: #63d9a3;
+    --mint-soft: rgba(99, 217, 163, 0.14);
+
+    --amber: #f2a66a;
+
+    --bloom-1: rgba(232, 177, 92, 0.14);
+    --bloom-2: rgba(99, 217, 163, 0.06);
+  }
+}
+
+/*
+ * `inline` matters here: it makes the utilities emit `var(--bg)` rather than
+ * baking in a literal, so every colour follows the media query above.
+ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+
+  --color-separator: var(--separator);
+  --color-separator-strong: var(--separator-strong);
+
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+
+  --color-gold: var(--gold);
+  --color-gold-vivid: var(--gold-vivid);
+  --color-gold-soft: var(--gold-soft);
+  --color-on-gold: var(--on-gold);
+
+  --color-mint: var(--mint);
+  --color-mint-vivid: var(--mint-vivid);
+  --color-mint-soft: var(--mint-soft);
+
+  --color-amber: var(--amber);
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui,
+    sans-serif;
+
+  --radius-chip: 16px;
+  --radius-card: 28px;
+
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    background: var(--bg);
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    /* Never below 16px: iOS zooms the viewport on focus otherwise. */
+    font-size: 17px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+  }
+
+  /* Chips and controls should feel like native buttons, not selectable text. */
+  button,
+  [role="radio"],
+  [role="checkbox"] {
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--gold-vivid);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  input,
+  textarea {
+    font-size: 17px;
+    font-family: inherit;
+  }
+
+  ::placeholder {
+    color: var(--faint);
+  }
+
+  ::selection {
+    background: var(--gold-soft);
+    color: var(--text);
+  }
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+  .safe-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  /* Optical tightening for display type at large sizes. */
+  .display {
+    letter-spacing: -0.028em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  .prompt {
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-wrap: pretty;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    scrollbar-width: none;
+  }
+
+  /* Soft warm glow behind the hero and the result. */
+  .bloom {
+    background:
+      radial-gradient(
+        60% 45% at 50% 0%,
+        var(--bloom-1) 0%,
+        transparent 70%
+      ),
+      radial-gradient(50% 40% at 80% 90%, var(--bloom-2) 0%, transparent 70%);
+  }
+}
+
+/* Anyone who's asked for less motion gets less motion — everywhere. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
